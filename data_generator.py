@@ -8,13 +8,16 @@ from sklearn.model_selection import train_test_split
 import constants
 
 class DataGenerator(object):
-    def __init__(self):
-        self.get_data()
-        self.X_train, self.X_validate, self.Y_train, self.Y_validate = train_test_split(self.X, self.Y, test_size=0.1)
+    def __init__(self, train_or_test):
+        assert train_or_test in ('train', 'test')
+        if train_or_test == 'train':
+            self.get_train_data()
+            self.X_train, self.X_validate, self.Y_train, self.Y_validate = train_test_split(self.X, self.Y, test_size=0.1)
+        else:
+            self.load_test_data()
        
-    def get_data(self):
+    def load_train_data(self):
         train_ids = next(os.walk(constants.TRAIN_PATH))[1]
-        test_ids = next(os.walk(constants.TEST_PATH))[1]
 
         self.X = np.zeros((len(train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS), dtype=np.uint8)
         self.Y = np.zeros((len(train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
@@ -33,15 +36,17 @@ class DataGenerator(object):
                 mask = np.maximum(mask, mask_)
             self.Y[n] = mask
         
+    def load_test_data(self):
+        self.test_ids = next(os.walk(constants.TEST_PATH))[1]
         # Get and resize test images
-        self.X_test = np.zeros((len(test_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS), dtype=np.uint8)
-        sizes_test = []
+        self.X_test = np.zeros((len(self.test_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS), dtype=np.uint8)
+        self.sizes_test = []
         print('Getting and resizing test images ... ')
         sys.stdout.flush()
-        for n, id_ in tqdm(enumerate(test_ids), total=len(test_ids)):
+        for n, id_ in tqdm(enumerate(self.test_ids), total=len(self.test_ids)):
             path = constants.TEST_PATH + id_
             img = imread(path + '/images/' + id_ + '.png')[:,:,:constants.IMG_CHANNELS]
-            sizes_test.append([img.shape[0], img.shape[1]])
+            self.sizes_test.append([img.shape[0], img.shape[1]])
             img = resize(img, (constants.IMG_HEIGHT, constants.IMG_WIDTH), mode='constant', preserve_range=True)
             self.X_test[n] = img
         
@@ -54,3 +59,6 @@ class DataGenerator(object):
                 yield self.X_train, self.Y_train
             else:
                 yield self.X_validate, self.Y_validate
+
+    def get_test_data(self):
+        return self.test_ids, self.X_test, self.sizes_test

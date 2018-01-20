@@ -26,7 +26,7 @@ def run_keras(model, model_name):
     callbacks = [checkpoint, reduce_lr]
 
     model.fit_generator(generator=training_generator, validation_data=test_generator, 
-                        steps_per_epoch=200, validation_steps=20,
+                        steps_per_epoch=20, validation_steps=2,
                         epochs=200,
                         callbacks=callbacks)
     return model
