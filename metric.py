@@ -14,8 +14,7 @@ def mean_iou(y_true, y_pred):
     return K.mean(K.stack(prec), axis=0)
 
 def new_iou(y_true, y_pred):
-    smooth = 1
-    threshold = 0.5
+    smooth = 0.001
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
