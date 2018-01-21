@@ -7,15 +7,17 @@ from data_generator import DataGenerator
 from model_generator import ModelGenerator
 import metric
 
-seed = 42
-random.seed = seed
-np.random.seed = seed
+#seed = 42
+#random.seed = seed
+#np.random.seed = seed
 
 def run_keras(model, model_name):
-    generator = DataGenerator()
-    training_generator = generator.generate('train')
-    test_generator = generator.generate('validate')
+    data_generator = DataGenerator('train')
+    train_generator, validate_generator = data_generator.generator(32)
 
+    #for a, b in train_generator:
+    #    print a, b
+    #    sys.exit(1)
     opt = Adam(lr=0.001, decay=0)
     #opt = keras.optimizers.Adadelta()
     #model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam', loss_weights=[1.0])
@@ -26,8 +28,8 @@ def run_keras(model, model_name):
     reduce_lr = ReduceLROnPlateau(verbose=1, min_lr = 1e-8, patience=5, factor=0.3)
     callbacks = [checkpoint, reduce_lr]
 
-    model.fit_generator(generator=training_generator, validation_data=test_generator, 
-                        steps_per_epoch=20, validation_steps=2,
+    model.fit_generator(generator=train_generator, validation_data=validate_generator,
+                        steps_per_epoch=50, validation_steps=10,
                         epochs=200,
                         callbacks=callbacks)
     return model
