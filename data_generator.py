@@ -25,9 +25,9 @@ class DataGenerator(object):
         yval = self.Y_validate
         data_gen_args = dict(horizontal_flip=True,
                              vertical_flip=True,
-                             rotation_range=90.,
-                             width_shift_range=0.1,
-                             height_shift_range=0.1,
+                             rotation_range=360.,
+                             width_shift_range=0.5,
+                             height_shift_range=0.5,
                              zoom_range=0.1)
         image_datagen = ImageDataGenerator(**data_gen_args)
         mask_datagen = ImageDataGenerator(**data_gen_args)
@@ -49,7 +49,7 @@ class DataGenerator(object):
         return train_generator, val_generator
        
     def load_train_data(self):
-        train_ids = next(os.walk(constants.TRAIN_PATH))[1][0:10]
+        train_ids = next(os.walk(constants.TRAIN_PATH))[1]
 
         self.X = np.zeros((len(train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS), dtype=np.uint8)
         self.Y = np.zeros((len(train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)

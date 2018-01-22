@@ -13,7 +13,7 @@ import metric
 
 def run_keras(model, model_name):
     data_generator = DataGenerator('train')
-    train_generator, validate_generator = data_generator.generator(32)
+    train_generator, validate_generator = data_generator.generator(128)
 
     #for a, b in train_generator:
     #    print a, b
@@ -29,7 +29,7 @@ def run_keras(model, model_name):
     callbacks = [checkpoint, reduce_lr]
 
     model.fit_generator(generator=train_generator, validation_data=validate_generator,
-                        steps_per_epoch=50, validation_steps=10,
+                        steps_per_epoch=200, validation_steps=20,
                         epochs=200,
                         callbacks=callbacks)
     return model
