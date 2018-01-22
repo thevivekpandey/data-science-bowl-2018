@@ -1,0 +1,18 @@
+Jan 17
+First attempt: LB 0.247
+
+Nuclei Overview to submission: LB 0.149
+------------------------------------------
+Jan 19, same kernel, LB 0.248
+Mean iou for train as well as test is 81%
+------------------------------------------
+Jan 20, same kernel
+Mean iou:  88, new iou: ~45., lower LB scores
+High accuracy is easy, but that is easy and does not mean much
+Mean iou is high enough, but new iou (in which I have more confidence
+is not high). So, I believe we can fit same data better.
+------------------------------------------
+Jan 21
+With keras augmentations, new iou 43%, LB 0.269
+loss: 0.0838 - acc: 0.9700 - mean_iou: 0.8273 - new_iou: 0.4244 - 
+val_loss: 0.0652 - val_acc: 0.9752 - val_mean_iou: 0.8275 - val_new_iou: 0.4344

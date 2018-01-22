@@ -1,0 +1,7 @@
+- rotate images / do other augmentations [DONE] Reached 26.9
+- try even more augmentations
+- have custom loss function
+- read segmentation paper
+- remove incorrect training examples
+- Look at input and output
+- Is 128x128 a good size?
