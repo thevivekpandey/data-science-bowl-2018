@@ -1,0 +1,96 @@
+Copy the following script to cuda.sh and run it (with sudo):
+#!/bin/bash
+echo "Checking for CUDA and installing."
+# Check for CUDA and try to install.
+if ! dpkg-query -W cuda-8-0; then
+  # The 16.04 installer works with 16.10.
+  curl -O http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.61-1_amd64.deb
+  dpkg -i ./cuda-repo-ubuntu1604_8.0.61-1_amd64.deb
+  apt-get update
+  apt-get install cuda-8-0 -y
+fi
+# Enable persistence mode
+nvidia-smi -pm 1
+
+(Taken from https://cloud.google.com/compute/docs/gpus/add-gpus)
+
+
+Copy these two files to the server
+libcudnn6-dev_6.0.21-1+cuda8.0_amd64.deb 
+libcudnn6_6.0.21-1+cuda8.0_amd64.deb
+
+
+sudo dpkg -i libcudnn6_6.0.21-1+cuda8.0_amd64.deb
+sudo dpkig -i libcudnn6-dev_6.0.21-1+cuda8.0_amd64.deb 
+
+
+Install following requirements:
+acoustics==0.1.2
+appnope==0.1.0
+attrs==17.3.0
+audioread==2.1.5
+bleach==1.5.0
+cycler==0.10.0
+Cython==0.27.3
+decorator==4.1.2
+entrypoints==0.2.3
+enum34==1.1.6
+h5py==2.7.1
+html5lib==0.9999999
+ipykernel==4.7.0
+jedi==0.11.1
+Jinja2==2.10
+joblib==0.11
+jsonschema==2.6.0
+jupyter==1.0.0
+jupyter-client==5.2.0
+jupyter-console==5.2.0
+jupyter-core==4.4.0
+Keras==2.1.2
+librosa==0.5.1
+llvmlite==0.21.0
+Markdown==2.6.10
+MarkupSafe==1.0
+matplotlib==2.1.1
+mistune==0.8.3
+nbconvert==5.3.1
+nbformat==4.4.0
+notebook==5.2.2
+numba==0.36.2
+numpy==1.13.3
+opencv-python==3.4.0.12
+pandas==0.21.1
+pandocfilters==1.4.2
+parso==0.1.1
+pexpect==4.3.1
+pickleshare==0.7.4
+pkg-resources==0.0.0
+pluggy==0.6.0
+prompt-toolkit==1.0.15
+protobuf==3.5.1
+ptyprocess==0.5.2
+py==1.5.2
+Pygments==2.2.0
+pyparsing==2.2.0
+pytest==3.3.1
+python-dateutil==2.6.1
+pytz==2017.3
+PyYAML==3.12
+pyzmq==16.0.3
+qtconsole==4.3.1
+resampy==0.2.0
+scikit-learn==0.19.1
+scipy==1.0.0
+simplegeneric==0.8.1
+six==1.11.0
+tabulate==0.8.2
+tensorflow-gpu==1.4.1
+tensorflow-tensorboard==0.4.0rc3
+terminado==0.8.1
+testpath==0.3.1
+tornado==4.5.2
+traitlets==4.3.2
+wcwidth==0.1.7
+webencodings==0.5.1
+Werkzeug==0.13
+widgetsnbextension==3.1.0

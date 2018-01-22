@@ -1,7 +1,8 @@
 - rotate images / do other augmentations [DONE] Reached 26.9
-- try even more augmentations
+- try even more augmentations [DONE: did not help]
 - have custom loss function
 - read segmentation paper
 - remove incorrect training examples
 - Look at input and output
 - Is 128x128 a good size?
+- Read about dice loss function
