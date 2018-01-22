@@ -5,6 +5,7 @@ import numpy as np
 from tqdm import tqdm
 from skimage.io import imread
 from skimage.transform import resize
+from scipy.misc import imsave
 from sklearn.model_selection import train_test_split
 import constants
 from keras.preprocessing.image import ImageDataGenerator
@@ -49,14 +50,17 @@ class DataGenerator(object):
         return train_generator, val_generator
        
     def load_train_data(self):
-        train_ids = next(os.walk(constants.TRAIN_PATH))[1]
+        self.train_ids = next(os.walk(constants.TRAIN_PATH))[1]
 
-        self.X = np.zeros((len(train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS), dtype=np.uint8)
-        self.Y = np.zeros((len(train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
+        self.X = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS), dtype=np.uint8)
+        self.Y = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
         print('Getting and resizing train images and masks ... ')
-        for n, id_ in tqdm(enumerate(train_ids), total=len(train_ids)):
+        self.sizes_train = []
+        for n, id_ in tqdm(enumerate(self.train_ids), total=len(self.train_ids)):
             path = constants.TRAIN_PATH + id_
             img = imread(path + '/images/' + id_ + '.png')[:,:,:constants.IMG_CHANNELS]
+            imsave('input_images/' + id_ + '.png', img)
+            self.sizes_train.append([img.shape[0], img.shape[1]])
             img = resize(img, (constants.IMG_HEIGHT, constants.IMG_WIDTH), mode='constant', preserve_range=True)
             self.X[n] = img
             mask = np.zeros((constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
@@ -65,6 +69,8 @@ class DataGenerator(object):
                 mask_ = np.expand_dims(resize(mask_, (constants.IMG_HEIGHT, constants.IMG_WIDTH), mode='constant', 
                                               preserve_range=True), axis=-1)
                 mask = np.maximum(mask, mask_)
+            reshaped_mask = mask.reshape(constants.IMG_HEIGHT, constants.IMG_WIDTH) * 255
+            imsave('actual_masks/' + id_ + '.png', reshaped_mask)
             self.Y[n] = mask
         
     def load_test_data(self):
@@ -91,3 +97,6 @@ class DataGenerator(object):
 
     def get_test_data(self):
         return self.test_ids, self.X_test, self.sizes_test
+
+    def get_train_data(self):
+        return self.train_ids, self.X, self.sizes_train

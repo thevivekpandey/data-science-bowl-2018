@@ -4,6 +4,7 @@ from skimage.morphology import label
 from keras.models import model_from_json
 import pandas as pd
 import numpy as np
+from scipy.misc import imsave
 from data_generator import DataGenerator
 
 class PredictionEngine:
@@ -12,7 +13,7 @@ class PredictionEngine:
         self.model_name = model_name
         self.data_generator = data_generator
 
-        assert train_or_test == 'test'
+        assert train_or_test in ('train', 'test')
         json_file = open('models/model-' + model_name + '.json')
         self.model = model_from_json(json_file.read())
         json_file.close()
@@ -36,20 +37,26 @@ class PredictionEngine:
             yield self.rle_encoding(lab_img == i)
 
     def predict(self):
-        test_ids, X_test, sizes_test = data_generator.get_test_data()
-        preds_test = self.model.predict(X_test, verbose=1)
+        if self.train_or_test == 'train':
+            ids, X, sizes = data_generator.get_train_data()
+        else:
+            ids, X, sizes = data_generator.get_test_data()
+
+        preds_test = self.model.predict(X, verbose=1)
         preds_test_t = (preds_test > 0.5).astype(np.uint8)
 
         # Create list of upsampled test masks
         preds_test_upsampled = []
         for i in range(len(preds_test)):
             preds_test_upsampled.append(resize(np.squeeze(preds_test[i]), 
-                                               (sizes_test[i][0], sizes_test[i][1]), 
+                                               (sizes[i][0], sizes[i][1]), 
                                                mode='constant', preserve_range=True))
 
+        for i in range(len(preds_test_upsampled)):
+            imsave('output_images/' + ids[i] + '.png', preds_test_upsampled[i])
         new_test_ids = []
         rles = []
-        for n, id_ in enumerate(test_ids):
+        for n, id_ in enumerate(ids):
             rle = list(self.prob_to_rles(preds_test_upsampled[n]))
             rles.extend(rle)
             new_test_ids.extend([id_] * len(rle))
@@ -58,12 +65,12 @@ class PredictionEngine:
         sub = pd.DataFrame()
         sub['ImageId'] = new_test_ids
         sub['EncodedPixels'] = pd.Series(rles).apply(lambda x: ' '.join(str(y) for y in x))
-        sub.to_csv('models/sub-' + self.model_name + '.csv', index=False)
+        ofile_name = 'models/sub-' + train_or_test + '-' + self.model_name + '.csv' 
+        sub.to_csv(ofile_name, index=False)
 if __name__ == '__main__':
     train_or_test = sys.argv[1]
     model_name = sys.argv[2]
 
-    data_generator = DataGenerator('test')
+    data_generator = DataGenerator(train_or_test)
     prediction_engine = PredictionEngine(train_or_test, model_name, data_generator)
     prediction_engine.predict()
-    #model = load_model('models/model-' + model_name + '.h5', custom_objects={'mean_iou': mean_iou})
