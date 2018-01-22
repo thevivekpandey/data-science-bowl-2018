@@ -26,9 +26,9 @@ class DataGenerator(object):
         data_gen_args = dict(horizontal_flip=True,
                              vertical_flip=True,
                              rotation_range=360.,
-                             width_shift_range=0.5,
-                             height_shift_range=0.5,
-                             zoom_range=0.1)
+                             width_shift_range=0.1,
+                             height_shift_range=0.1,
+                             zoom_range=0.2)
         image_datagen = ImageDataGenerator(**data_gen_args)
         mask_datagen = ImageDataGenerator(**data_gen_args)
         image_datagen.fit(xtr, seed=7)

@@ -13,7 +13,7 @@ import metric
 
 def run_keras(model, model_name):
     data_generator = DataGenerator('train')
-    train_generator, validate_generator = data_generator.generator(128)
+    train_generator, validate_generator = data_generator.generator(16)
 
     #for a, b in train_generator:
     #    print a, b
@@ -24,12 +24,12 @@ def run_keras(model, model_name):
     model.compile(loss='binary_crossentropy', metrics=['accuracy', metric.mean_iou, metric.new_iou], optimizer=opt)
     #filepath = "models/model-" + model_name + "-{epoch:03d}-{val_acc:.4f}.h5"
     filepath = "models/model-" + model_name + "-{epoch:03d}.h5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=0, save_best_only=False, mode='max')
-    reduce_lr = ReduceLROnPlateau(verbose=1, min_lr = 1e-8, patience=5, factor=0.3)
+    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=0, save_best_only=True, mode='max')
+    reduce_lr = ReduceLROnPlateau(verbose=1, min_lr = 1e-8, patience=3, factor=0.3)
     callbacks = [checkpoint, reduce_lr]
 
     model.fit_generator(generator=train_generator, validation_data=validate_generator,
-                        steps_per_epoch=200, validation_steps=20,
+                        steps_per_epoch=40, validation_steps=4,
                         epochs=200,
                         callbacks=callbacks)
     return model
