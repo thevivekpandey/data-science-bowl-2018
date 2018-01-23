@@ -38,7 +38,6 @@ model_name = sys.argv[1]
 model_generator = ModelGenerator()
 model = model_generator.get_unet_8a()
 print model.summary()
-sys.exit(1)
 model_json = model.to_json()
 with open('models/model-' + model_name + '.json', 'w') as f:
     f.write(model_json)
