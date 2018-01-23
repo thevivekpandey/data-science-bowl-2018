@@ -16,7 +16,7 @@ class DataGenerator(object):
         if train_or_test == 'train':
             self.init_erroneous_image_ids()
             self.load_train_data()
-            self.X_train, self.X_validate, self.Y_train, self.Y_validate = train_test_split(self.X, self.Y, test_size=0.1, random_state=7)
+            self.X_train, self.X_validate, self.Y_train, self.Y_validate = train_test_split(self.X, self.Y_cg, test_size=0.1, random_state=7)
         else:
             self.load_test_data()
 
@@ -35,9 +35,9 @@ class DataGenerator(object):
         data_gen_args = dict(horizontal_flip=True,
                              vertical_flip=True,
                              rotation_range=360.,
-                             width_shift_range=0.1,
-                             height_shift_range=0.1,
-                             zoom_range=0.2)
+                             width_shift_range=0.,
+                             height_shift_range=0.,
+                             zoom_range=0.0)
         image_datagen = ImageDataGenerator(**data_gen_args)
         mask_datagen = ImageDataGenerator(**data_gen_args)
         image_datagen.fit(xtr, seed=7)

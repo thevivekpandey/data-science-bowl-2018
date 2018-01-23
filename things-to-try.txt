@@ -10,3 +10,5 @@
 - Approach 1: have one point for each segment, and then train
   for finding the point
 - Appraoch 2: train for boundary
+- Approach 3: Just train NN to output number of segments. Then you can use some
+  k means clustering to find those segments.

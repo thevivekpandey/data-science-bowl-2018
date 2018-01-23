@@ -12,7 +12,7 @@ from keras import regularizers
 from keras.layers import Input
 #from keras.layers.convolutional import Conv2D, Conv2DTranspose
 #from keras.layers.pooling import MaxPooling2D
-from keras.layers import BatchNormalization, UpSampling2D, merge
+from keras.layers import BatchNormalization, UpSampling2D
 import constants
 
 class ModelGenerator():
@@ -65,83 +65,49 @@ class ModelGenerator():
         model = Model(inputs=[inputs], outputs=[outputs])
         return model
 
-    def get_unet8(elf):
+    def downstream_convolve_1(self, input, f):
+        conv = Conv2D(f, (3, 3), padding='same', kernel_initializer='he_uniform')(input)
+        conv = PReLU()(conv)
+        conv = BatchNormalization()(conv)
+        conv = Conv2D(f, (3, 3), padding='same', kernel_initializer='he_uniform')(conv)
+        conv = PReLU()(conv)
+        conv = BatchNormalization()(conv)
+        return conv
+    
+    def upstrem_convolve_1(self, prev_input, lateral_input, f):
+        up = concatenate([UpSampling2D(size=(2, 2))(prev_input), lateral_input],  axis=3)
+        conv = Conv2D(f, (3, 3), padding='same', kernel_initializer='he_uniform')(up)
+        conv = PReLU()(conv)
+        conv = BatchNormalization()(conv)
+        conv = Conv2D(f, (3, 3), padding='same', kernel_initializer='he_uniform')(conv)
+        conv = PReLU()(conv)
+        conv = BatchNormalization()(conv)
+        return conv
+
+    def get_unet_8a(self):
         inputs = Input((constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS))
-        conv1 = Conv2D(32, (3, 3), padding='same', kernel_initializer='he_uniform')(inputs)
-        conv1 = PReLU()(conv1)
-        conv1 = BatchNormalization()(conv1)
-        conv1 = Conv2D(32, (3, 3), padding='same', kernel_initializer='he_uniform')(conv1)
-        conv1 = PReLU()(conv1)
-        conv1 = BatchNormalization()(conv1)
-    
+
+        conv1 = self.downstream_convolve_1(inputs, 32)
         pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
-    
-        conv2 = Conv2D(64, (3, 3), padding='same', kernel_initializer='he_uniform')(pool1)
-        conv2 = PReLU()(conv2)
-        conv2 = BatchNormalization()(conv2)
-        conv2 = Conv2D(64, (3, 3), padding='same', kernel_initializer='he_uniform')(conv2)
-        conv2 = PReLU()(conv2)
-        conv2 = BatchNormalization()(conv2)
+
+        conv2 = self.downstream_convolve_1(pool1, 64)
         pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
-    
-        conv3 = Conv2D(128, (3, 3), padding='same', kernel_initializer='he_uniform')(pool2)
-        conv3 = PReLU()(conv3)
-        conv3 = BatchNormalization()(conv3)
-        conv3 = Conv2D(128, (3, 3), padding='same', kernel_initializer='he_uniform')(conv3)
-        conv3 = PReLU()(conv3)
-        conv3 = BatchNormalization()(conv3)
+
+        conv3 = self.downstream_convolve_1(pool2, 128)
         pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
-    
-        conv4 = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_uniform')(pool3)
-        conv4 = PReLU()(conv4)
-        conv4 = BatchNormalization()(conv4)
-        conv4 = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_uniform')(conv4)
-        conv4 = PReLU()(conv4)
-        conv4 = BatchNormalization()(conv4)
+
+        conv4 = self.downstream_convolve_1(pool3, 256)
         pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
-    
-        conv5 = Conv2D(512, (3, 3), padding='same', kernel_initializer='he_uniform')(pool4)
-        conv5 = PReLU()(conv5)
-        conv5 = BatchNormalization()(conv5)
-        conv5 = Conv2D(512, (3, 3), padding='same', kernel_initializer='he_uniform')(conv5)
-        conv5 = PReLU()(conv5)
-        conv5 = BatchNormalization()(conv5)
-    
-        up6 = merge([UpSampling2D(size=(2, 2))(conv5), conv4], mode='concat', concat_axis=3)
-        conv6 = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_uniform')(up6)
-        conv6 = PReLU()(conv6)
-        conv6 = BatchNormalization()(conv6)
-        conv6 = Conv2D(256, (3, 3), padding='same', kernel_initializer='he_uniform')(conv6)
-        conv6 = PReLU()(conv6)
-        conv6 = BatchNormalization()(conv6)
-    
-        up7 = merge([UpSampling2D(size=(2, 2))(conv6), conv3], mode='concat', concat_axis=3)
-        conv7 = Conv2D(128, (3, 3), padding='same', kernel_initializer='he_uniform')(up7)
-        conv7 = PReLU()(conv7)
-        conv7 = BatchNormalization()(conv7)
-        conv7 = Conv2D(128, (3, 3), padding='same', kernel_initializer='he_uniform')(conv7)
-        conv7 = PReLU()(conv7)
-        conv7 = BatchNormalization()(conv7)
-    
-        up8 = merge([UpSampling2D(size=(2, 2))(conv7), conv2], mode='concat', concat_axis=3)
-        conv8 = Conv2D(64, (3, 3), padding='same', kernel_initializer='he_uniform')(up8)
-        conv8 = PReLU()(conv8)
-        conv8 = BatchNormalization()(conv8)
-        conv8 = Conv2D(64, (3, 3), padding='same', kernel_initializer='he_uniform')(conv8)
-        conv8 = PReLU()(conv8)
-        conv8 = BatchNormalization()(conv8)
-    
-        up9 = merge([UpSampling2D(size=(2, 2))(conv8), conv1], mode='concat', concat_axis=3)
-        conv9 = Conv2D(32, (3, 3), padding='same', kernel_initializer='he_uniform')(up9)
-        conv9 = PReLU()(conv9)
-        conv9 = BatchNormalization()(conv9)
-        conv9 = Conv2D(32, (3, 3), padding='same', kernel_initializer='he_uniform')(conv9)
-        conv9 = PReLU()(conv9)
-        conv9 = BatchNormalization()(conv9)
-        conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
-    
-        model = Model(input=inputs, output=conv10)
-        return model
+
+        conv5_u = self.downstream_convolve_1(pool4, 512)
+
+        conv4_u = self.upstrem_convolve_1(conv5_u, conv4, 256)
+        conv3_u = self.upstrem_convolve_1(conv4_u, conv3, 128)
+        conv2_u = self.upstrem_convolve_1(conv3_u, conv2, 64)
+        conv1_u = self.upstrem_convolve_1(conv2_u, conv1, 32)
+        output = Conv2D(1, (1, 1), activation='sigmoid')(conv1_u)
+
+        return Model(input=inputs, outputs=output)
 
 if __name__ == '__main__':
     n_mels = 40
