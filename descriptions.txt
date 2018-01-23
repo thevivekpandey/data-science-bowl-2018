@@ -16,3 +16,9 @@ Jan 21
 With keras augmentations, new iou 43%, LB 0.269
 loss: 0.0838 - acc: 0.9700 - mean_iou: 0.8273 - new_iou: 0.4244 - 
 val_loss: 0.0652 - val_acc: 0.9752 - val_mean_iou: 0.8275 - val_new_iou: 0.4344
+
+Jan 22
+-------------------------------------------
+With R's unet (unet-8)
+loss: 0.0671 - acc: 0.9737 - mean_iou: 0.8517 - new_iou: 0.4315 - val_loss: 0.0728 - val_acc: 0.9727 - val_mean_iou: 0.8518 - val_new_iou: 0.4312
+LB 0.301

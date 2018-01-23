@@ -14,10 +14,18 @@ class DataGenerator(object):
     def __init__(self, train_or_test):
         assert train_or_test in ('train', 'test')
         if train_or_test == 'train':
+            self.init_erroneous_image_ids()
             self.load_train_data()
             self.X_train, self.X_validate, self.Y_train, self.Y_validate = train_test_split(self.X, self.Y, test_size=0.1, random_state=7)
         else:
             self.load_test_data()
+
+    def init_erroneous_image_ids(self):
+        self.image_ids_to_ignore = []
+        f = open('erroneous_image_ids.txt')
+        for line in f:
+            self.image_ids_to_ignore.append(line.strip())
+        f.close()
 
     def generator(self, batch_size):
         xtr = self.X_train
@@ -51,9 +59,12 @@ class DataGenerator(object):
        
     def load_train_data(self):
         self.train_ids = next(os.walk(constants.TRAIN_PATH))[1]
+        for id in self.image_ids_to_ignore:
+            self.train_ids.remove(id)
 
         self.X = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS), dtype=np.uint8)
         self.Y = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
+        self.Y_cg = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH), dtype=np.uint8)
         print('Getting and resizing train images and masks ... ')
         self.sizes_train = []
         for n, id_ in tqdm(enumerate(self.train_ids), total=len(self.train_ids)):
@@ -63,15 +74,24 @@ class DataGenerator(object):
             self.sizes_train.append([img.shape[0], img.shape[1]])
             img = resize(img, (constants.IMG_HEIGHT, constants.IMG_WIDTH), mode='constant', preserve_range=True)
             self.X[n] = img
-            mask = np.zeros((constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
+            mask    = np.zeros((constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
+            cg_mask = np.zeros((constants.IMG_HEIGHT, constants.IMG_WIDTH), dtype=np.uint8)
             for mask_file in next(os.walk(path + '/masks/'))[2]:
                 mask_ = imread(path + '/masks/' + mask_file)
                 mask_ = np.expand_dims(resize(mask_, (constants.IMG_HEIGHT, constants.IMG_WIDTH), mode='constant', 
                                               preserve_range=True), axis=-1)
+
+                # We are finding CG in resized image
+                cg_x, cg_y, _ = self.find_cg(mask_)
+                #Sometimes, masks get lost. Perhaps because of image resizing. We lose some masks for around ~25 images
+                if cg_x > -1:
+                    cg_mask[int(cg_x)][int(cg_y)] = constants.MAX_MASK_VAL
                 mask = np.maximum(mask, mask_)
             reshaped_mask = mask.reshape(constants.IMG_HEIGHT, constants.IMG_WIDTH) * 255
             imsave('actual_masks/' + id_ + '.png', reshaped_mask)
+            imsave('cgs/' + id_ + '.png', cg_mask)
             self.Y[n] = mask
+            self.Y_cg[n] = cg_mask
         
     def load_test_data(self):
         self.test_ids = next(os.walk(constants.TEST_PATH))[1]
@@ -86,6 +106,12 @@ class DataGenerator(object):
             img = resize(img, (constants.IMG_HEIGHT, constants.IMG_WIDTH), mode='constant', preserve_range=True)
             self.X_test[n] = img
         print('Done!')
+
+    def find_cg(self, mask):
+        indices = np.argwhere(mask > constants.MAX_MASK_VAL - 10)
+        if len(indices) == 0:
+            return -1, -1, 0
+        return np.average(indices, axis=0)
 
     def generate(self, t):
         assert t in ['train', 'validate']

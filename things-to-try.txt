@@ -3,6 +3,10 @@
 - have custom loss function
 - read segmentation paper
 - remove incorrect training examples
-- Look at input and output
-- Is 128x128 a good size?
+- Look at input and output [DONE]
+- Is 128x128 a good size? [DONE]
 - Read about dice loss function
+
+- Approach 1: have one point for each segment, and then train
+  for finding the point
+- Appraoch 2: train for boundary
