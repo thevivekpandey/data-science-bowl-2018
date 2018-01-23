@@ -60,22 +60,23 @@ class DataGenerator(object):
     def load_train_data(self):
         self.train_ids = next(os.walk(constants.TRAIN_PATH))[1]
         for id in self.image_ids_to_ignore:
-            self.train_ids.remove(id)
+            if id in self.train_ids:
+                self.train_ids.remove(id)
 
         self.X = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS), dtype=np.uint8)
         self.Y = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
-        self.Y_cg = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH), dtype=np.uint8)
+        self.Y_cg = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
         print('Getting and resizing train images and masks ... ')
         self.sizes_train = []
         for n, id_ in tqdm(enumerate(self.train_ids), total=len(self.train_ids)):
             path = constants.TRAIN_PATH + id_
             img = imread(path + '/images/' + id_ + '.png')[:,:,:constants.IMG_CHANNELS]
-            imsave('input_images/' + id_ + '.png', img)
+            #imsave('input_images/' + id_ + '.png', img)
             self.sizes_train.append([img.shape[0], img.shape[1]])
             img = resize(img, (constants.IMG_HEIGHT, constants.IMG_WIDTH), mode='constant', preserve_range=True)
             self.X[n] = img
             mask    = np.zeros((constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
-            cg_mask = np.zeros((constants.IMG_HEIGHT, constants.IMG_WIDTH), dtype=np.uint8)
+            cg_mask = np.zeros((constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
             for mask_file in next(os.walk(path + '/masks/'))[2]:
                 mask_ = imread(path + '/masks/' + mask_file)
                 mask_ = np.expand_dims(resize(mask_, (constants.IMG_HEIGHT, constants.IMG_WIDTH), mode='constant', 
@@ -85,11 +86,11 @@ class DataGenerator(object):
                 cg_x, cg_y, _ = self.find_cg(mask_)
                 #Sometimes, masks get lost. Perhaps because of image resizing. We lose some masks for around ~25 images
                 if cg_x > -1:
-                    cg_mask[int(cg_x)][int(cg_y)] = constants.MAX_MASK_VAL
+                    cg_mask[int(cg_x)][int(cg_y)][0] = True
                 mask = np.maximum(mask, mask_)
             reshaped_mask = mask.reshape(constants.IMG_HEIGHT, constants.IMG_WIDTH) * 255
-            imsave('actual_masks/' + id_ + '.png', reshaped_mask)
-            imsave('cgs/' + id_ + '.png', cg_mask)
+            #imsave('actual_masks/' + id_ + '.png', reshaped_mask)
+            #imsave('cgs/' + id_ + '.png', cg_mask * 255)
             self.Y[n] = mask
             self.Y_cg[n] = cg_mask
         
