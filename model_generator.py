@@ -109,6 +109,31 @@ class ModelGenerator():
 
         return Model(input=inputs, outputs=output)
 
+    def get_unet_8b(self):
+        inputs = Input((constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS))
+
+        conv1 = self.downstream_convolve_1(inputs, 1)
+        pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+
+        conv2 = self.downstream_convolve_1(pool1, 2)
+        pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
+
+        conv3 = self.downstream_convolve_1(pool2, 4)
+        pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
+
+        conv4 = self.downstream_convolve_1(pool3, 8)
+        pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
+
+        conv5_u = self.downstream_convolve_1(pool4, 16)
+
+        conv4_u = self.upstrem_convolve_1(conv5_u, conv4, 8)
+        conv3_u = self.upstrem_convolve_1(conv4_u, conv3, 4)
+        conv2_u = self.upstrem_convolve_1(conv3_u, conv2, 2)
+        conv1_u = self.upstrem_convolve_1(conv2_u, conv1, 1)
+        output = Conv2D(1, (1, 1), activation='sigmoid')(conv1_u)
+
+        return Model(input=inputs, outputs=output)
+
     def get_unet_8_for_k_means(self):
         inputs = Input((constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS))
 

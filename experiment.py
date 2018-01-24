@@ -6,6 +6,7 @@ from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from data_generator import DataGenerator
 from model_generator import ModelGenerator
 import metric
+import losses
 
 #seed = 42
 #random.seed = seed
@@ -21,7 +22,7 @@ def run_keras(model, model_name):
     opt = Adam(lr=0.001, decay=0)
     #opt = keras.optimizers.Adadelta()
     #model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam', loss_weights=[1.0])
-    model.compile(loss='binary_crossentropy', metrics=['accuracy', metric.mean_iou, metric.new_iou], optimizer=opt)
+    model.compile(loss=losses.cg_loss, optimizer=opt)
     #filepath = "models/model-" + model_name + "-{epoch:03d}-{val_acc:.4f}.h5"
     filepath = "models/model-" + model_name + "-{epoch:03d}.h5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=0, save_best_only=True, mode='max')
