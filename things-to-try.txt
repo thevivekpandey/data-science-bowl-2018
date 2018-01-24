@@ -2,13 +2,20 @@
 - try even more augmentations [DONE: did not help]
 - have custom loss function
 - read segmentation paper
-- remove incorrect training examples
+- remove incorrect training examples [DONE]
 - Look at input and output [DONE]
 - Is 128x128 a good size? [DONE]
 - Read about dice loss function
+- Predict one by one rather than all together in prediction engine
+- Use outside data
 
 - Approach 1: have one point for each segment, and then train
-  for finding the point
-- Appraoch 2: train for boundary
+  for finding the point  [DID NOT WORK]
+- Approach 2: train for boundary [NOT WORTH TRY IN LIGHT OF RESULT OF APPROACH 1]
 - Approach 3: Just train NN to output number of segments. Then you can use some
   k means clustering to find those segments.
+- Approach 4: Ask NN to explicitly output the number of points and their location
+
+- Can you have a better loss function for appraoch 1? Perhaps, sum of pixel values
+  should be same as in training example and high standard deviation should be
+  encouraged?

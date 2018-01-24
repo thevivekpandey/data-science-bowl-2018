@@ -109,6 +109,24 @@ class ModelGenerator():
 
         return Model(input=inputs, outputs=output)
 
+    def get_unet_8_for_k_means(self):
+        inputs = Input((constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS))
+
+        conv1 = self.downstream_convolve_1(inputs, 8)
+        pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+
+        conv2 = self.downstream_convolve_1(pool1, 16)
+        pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
+
+        conv3 = self.downstream_convolve_1(pool2, 32)
+        pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
+
+        flat = Flatten()(pool3)
+        dense = Dense(128, activation='relu')(flat)
+        output = Dense(1, activation='relu')(dense)
+
+        return Model(input=inputs, outputs=output)
+
 if __name__ == '__main__':
     n_mels = 40
     raw_wav = Input(shape=(16000, 1))
