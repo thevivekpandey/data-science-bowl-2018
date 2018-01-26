@@ -16,7 +16,7 @@ class DataGeneratorB(object):
         if train_or_test == 'train':
             self.init_erroneous_image_ids()
             self.load_train_data()
-            self.X_train, self.X_validate, self.Y_train, self.Y_validate = train_test_split(self.X, self.Y, test_size=0.1, random_state=7)
+            self.X_train, self.X_val, self.Y_train, self.Y_val= train_test_split(self.X, self.Y, test_size=0.1, random_state=7)
         else:
             self.load_test_data()
 
@@ -45,15 +45,15 @@ class DataGeneratorB(object):
                 idxs.append(idx)
                 X_batch.append(one_x)
                 Y_batch.append(one_y)
-                imsave('temp_images/x-' + str(i) + '.png', one_x)
-                imsave('temp_images/y-' + str(i) + '.png', one_y.reshape(256, 256))
+                #imsave('temp_images/x-' + str(i) + '.png', one_x)
+                #imsave('temp_images/y-' + str(i) + '.png', one_y.reshape(256, 256))
             if train_or_val == 'temp':
                 yield idxs, np.array(X_batch), np.array(Y_batch)
             else:
                 yield np.array(X_batch), np.array(Y_batch)
 
     def load_train_data(self):
-        train_ids = next(os.walk(constants.TRAIN_PATH))[1][0:10]
+        train_ids = next(os.walk(constants.TRAIN_PATH))[1]
         self.X, self.Y = [], []
         print('Getting train images and masks ... ')
         sys.stdout.flush()
