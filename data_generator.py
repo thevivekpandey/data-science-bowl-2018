@@ -16,7 +16,7 @@ class DataGenerator(object):
         if train_or_test == 'train':
             self.init_erroneous_image_ids()
             self.load_train_data()
-            self.X_train, self.X_validate, self.Y_train, self.Y_validate = train_test_split(self.X, self.Y_cg, test_size=0.1, random_state=7)
+            self.X_train, self.X_validate, self.Y_train, self.Y_validate = train_test_split(self.X, self.Y, test_size=0.1, random_state=7)
         else:
             self.load_test_data()
 
@@ -58,14 +58,14 @@ class DataGenerator(object):
         return train_generator, val_generator
        
     def load_train_data(self):
-        self.train_ids = next(os.walk(constants.TRAIN_PATH))[1]
+        self.train_ids = next(os.walk(constants.TRAIN_PATH))[1][0:5]
         for id in self.image_ids_to_ignore:
             if id in self.train_ids:
                 self.train_ids.remove(id)
 
         self.X = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, constants.IMG_CHANNELS), dtype=np.uint8)
         self.Y = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
-        self.Y_cg = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
+        #self.Y_cg = np.zeros((len(self.train_ids), constants.IMG_HEIGHT, constants.IMG_WIDTH, 1), dtype=np.bool)
         print('Getting and resizing train images and masks ... ')
         self.sizes_train = []
         for n, id_ in tqdm(enumerate(self.train_ids), total=len(self.train_ids)):
@@ -85,8 +85,8 @@ class DataGenerator(object):
                 # We are finding CG in resized image
                 cg_x, cg_y, _ = self.find_cg(mask_)
                 #Sometimes, masks get lost. Perhaps because of image resizing. We lose some masks for around ~25 images
-                if cg_x > -1:
-                    cg_mask[int(cg_x)][int(cg_y)][0] = True
+                #if cg_x > -1:
+                #    cg_mask[int(cg_x)][int(cg_y)][0] = True
                 mask = np.maximum(mask, mask_)
             reshaped_mask = mask.reshape(constants.IMG_HEIGHT, constants.IMG_WIDTH) * 255
             #imsave('actual_masks/' + id_ + '.png', reshaped_mask)

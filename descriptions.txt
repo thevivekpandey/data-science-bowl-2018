@@ -22,3 +22,8 @@ Jan 22
 With R's unet (unet-8)
 loss: 0.0671 - acc: 0.9737 - mean_iou: 0.8517 - new_iou: 0.4315 - val_loss: 0.0728 - val_acc: 0.9727 - val_mean_iou: 0.8518 - val_new_iou: 0.4312
 LB 0.301
+
+With unet-5:
+Let's check num rles on train:
+Total: 29K, predicted 14K
+Averge deviation: 33%

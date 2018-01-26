@@ -19,3 +19,8 @@
 - Can you have a better loss function for appraoch 1? Perhaps, sum of pixel values
   should be same as in training example and high standard deviation should be
   encouraged?
+  Tried better loss function, but loss function does not go down.
+  Need to find components of the loss function
+
+- Size could play a role. We should avoid resizing, rather take cuts of
+  large sized images

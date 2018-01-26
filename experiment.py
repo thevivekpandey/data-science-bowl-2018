@@ -4,6 +4,7 @@ import numpy as np
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from data_generator import DataGenerator
+from data_generator_b import DataGeneratorB
 from model_generator import ModelGenerator
 import metric
 import losses
@@ -13,19 +14,16 @@ import losses
 #np.random.seed = seed
 
 def run_keras(model, model_name):
-    data_generator = DataGenerator('train')
-    train_generator, validate_generator = data_generator.generator(16)
+    #data_generator = DataGenerator('train')
+    #train_generator, validate_generator = data_generator.generator(16)
+    data_generator = DataGeneratorB('train')
+    train_generator    = data_generator.generator('train', 16)
+    validate_generator = data_generator.generator('validate', 16)
 
-    #for a, b in train_generator:
-    #    print a, b
-    #    sys.exit(1)
     opt = Adam(lr=0.001, decay=0)
-    #opt = keras.optimizers.Adadelta()
-    #model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam', loss_weights=[1.0])
     model.compile(loss=losses.cg_loss, optimizer=opt)
-    #filepath = "models/model-" + model_name + "-{epoch:03d}-{val_acc:.4f}.h5"
     filepath = "models/model-" + model_name + "-{epoch:03d}.h5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=0, save_best_only=True, mode='max')
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=True, mode='min')
     reduce_lr = ReduceLROnPlateau(verbose=1, min_lr = 1e-8, patience=3, factor=0.3)
     callbacks = [checkpoint, reduce_lr]
 
@@ -37,7 +35,7 @@ def run_keras(model, model_name):
 
 model_name = sys.argv[1]
 model_generator = ModelGenerator()
-model = model_generator.get_unet_8a()
+model = model_generator.get_unet_1()
 print model.summary()
 model_json = model.to_json()
 with open('models/model-' + model_name + '.json', 'w') as f:

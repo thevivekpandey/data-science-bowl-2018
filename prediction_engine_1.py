@@ -8,13 +8,6 @@ from keras.models import model_from_json, load_model
 import constants
 from data_generator import DataGenerator
 
-def cg_loss(y_true, y_pred):
-    part1 = K.mean(K.binary_crossentropy(y_true, y_pred), axis=-1)
-    #part2 = K.abs(K.sum(y_pred, axis=-1) - K.sum(y_true, axis=-1))
-    part3 = K.sum(y_true, axis=-1) / K.sum(K.pow(y_pred, 2), axis=-1)
-    return part1 + part3
-    #return part1(y_true, y_pred) + part3(y_true, y_pred)
-
 class PredictionEngine:
     def __init__(self, train_or_test, model_name, data_generator):
         self.train_or_test = train_or_test
@@ -22,10 +15,6 @@ class PredictionEngine:
         self.data_generator = data_generator
 
         assert train_or_test in ('train', 'test')
-        #json_file = open('models/model-' + model_name + '.json')
-        #self.model = model_from_json(json_file.read())
-        #json_file.close()
-        #self.model = load_model('models/model-' + model_name + '.h5', custom_objects={'cg_loss': cg_loss})
         self.model = load_model('models/model-' + model_name + '.h5')
         
     # Run-length encoding taken from 
@@ -45,38 +34,6 @@ class PredictionEngine:
         for i in range(1, lab_img.max() + 1):
             yield self.rle_encoding(lab_img == i)
 
-    def predict_old(self):
-        if self.train_or_test == 'train':
-            ids, X, sizes = data_generator.get_train_data()
-        else:
-            ids, X, sizes = data_generator.get_test_data()
-
-        preds_test = self.model.predict(X, verbose=1)
-        preds_test_t = (preds_test > 0.5).astype(np.uint8)
-
-        # Create list of upsampled test masks
-        preds_test_upsampled = []
-        for i in range(len(preds_test)):
-            preds_test_upsampled.append(resize(np.squeeze(preds_test[i]), 
-                                               (sizes[i][0], sizes[i][1]), 
-                                               mode='constant', preserve_range=True))
-
-        for i in range(len(preds_test_upsampled)):
-            imsave('output_cgs/' + ids[i] + '.png', preds_test_upsampled[i])
-        new_test_ids = []
-        rles = []
-        for n, id_ in enumerate(ids):
-            rle = list(self.prob_to_rles(preds_test_upsampled[n]))
-            rles.extend(rle)
-            new_test_ids.extend([id_] * len(rle))
-
-        # Create submission DataFrame
-        sub = pd.DataFrame()
-        sub['ImageId'] = new_test_ids
-        sub['EncodedPixels'] = pd.Series(rles).apply(lambda x: ' '.join(str(y) for y in x))
-        ofile_name = 'models/sub-' + train_or_test + '-' + self.model_name + '.csv' 
-        sub.to_csv(ofile_name, index=False)
-
     def predict(self):
         if self.train_or_test == 'train':
             ids, X, sizes = data_generator.get_train_data()
@@ -91,11 +48,10 @@ class PredictionEngine:
                                                (size[0], size[1]), 
                                                mode='constant', preserve_range=True))
     
-            #imsave('output_cgs/' + id + '.png', preds_test_upsampled[i])
-            print preds_test[0].shape
-            print preds_test_upsampled[i].shape
-            preds_test = (preds_test > 0.05) * 255
-            imsave('output_cgs/' + id + '.png', preds_test[0].reshape(constants.IMG_WIDTH, constants.IMG_HEIGHT))
+            #preds_test_t = (preds_test > 0.50).astype(np.uint8)
+
+        for i in range(len(preds_test_upsampled)):
+            imsave('output_images/' + ids[i] + '.png', preds_test_upsampled[i]) 
 
         new_test_ids = []
         rles = []
