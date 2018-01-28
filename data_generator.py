@@ -28,6 +28,13 @@ class DataGenerator(object):
         f.close()
 
     def generator(self, batch_size):
+        t_gen, v_gen = self.generator_work(batch_size) 
+        while True:
+            t = t_gen.next()
+            v = v_gen.next()
+            yield t, v
+
+    def generator_work(self, batch_size):
         xtr = self.X_train
         xval = self.X_validate
         ytr = self.Y_train
@@ -93,7 +100,7 @@ class DataGenerator(object):
             #imsave('cgs/' + id_ + '.png', cg_mask * 255)
             self.Y[n] = mask
             self.Y_cg[n] = cg_mask
-        
+
     def load_test_data(self):
         self.test_ids = next(os.walk(constants.TEST_PATH))[1]
         # Get and resize test images
