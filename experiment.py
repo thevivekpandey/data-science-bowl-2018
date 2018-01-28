@@ -22,8 +22,8 @@ def run_keras(model, model_name):
 
     opt = Adam(lr=0.001, decay=0)
     model.compile(loss='binary_crossentropy', optimizer=opt, metrics=[metric.mean_iou])
-    filepath = "models/model-" + model_name + "-{epoch:03d}-{val_loss:.4f}.h5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=True, mode='min')
+    filepath = "models/model-" + model_name + "-{epoch:03d}-{val_mean_iou:.4f}.h5"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_mean_iou', verbose=0, save_best_only=True, mode='max')
     reduce_lr = ReduceLROnPlateau(verbose=1, min_lr = 1e-8, patience=3, factor=0.3)
     callbacks = [checkpoint, reduce_lr]
 
