@@ -43,3 +43,8 @@ So, the main problem is finding the number of nuclei.
 Now, the main ideas are: 
 - get same number of training examples from each microscope, so as not to overfit.
 - augmentation with random crops
+-----------------------
+Jan 28
+- With 7 augmentations and many cycles, got 30.6% which is higehst ever.
+  You should continue to train as long as mean iou keeps increasing.
+- Now let us try different sized random crops

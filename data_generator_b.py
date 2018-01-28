@@ -66,18 +66,26 @@ class DataGeneratorB(object):
             for i in range(batch_size):
                 idx = random.randint(0, len(X_local) - 1)
                 size_x, size_y = X_local[idx].shape[0], X_local[idx].shape[1]
-                my_init_x = random.randint(0, size_x - constants.IMG_WIDTH) 
-                my_init_y = random.randint(0, size_y - constants.IMG_HEIGHT)
-                one_x = X_local[idx][my_init_x:my_init_x + constants.IMG_WIDTH, my_init_y: my_init_y + constants.IMG_HEIGHT, :]
-                one_y = Y_local[idx][my_init_x:my_init_x + constants.IMG_WIDTH, my_init_y: my_init_y + constants.IMG_HEIGHT] / 255.0
+                #my_init_x = random.randint(0, size_x - constants.IMG_WIDTH) 
+                #my_init_y = random.randint(0, size_y - constants.IMG_HEIGHT)
+                sample_x_size = random.randint(200, size_x)
+                sample_y_size = random.randint(200, size_y)
+                my_init_x = random.randint(0, size_x - sample_x_size) 
+                my_init_y = random.randint(0, size_y - sample_y_size)
+                #one_x = X_local[idx][my_init_x:my_init_x + constants.IMG_WIDTH, my_init_y: my_init_y + constants.IMG_HEIGHT, :]
+                #one_y = Y_local[idx][my_init_x:my_init_x + constants.IMG_WIDTH, my_init_y: my_init_y + constants.IMG_HEIGHT] / 255.0
+                one_x = X_local[idx][my_init_x:my_init_x + sample_x_size, my_init_y: my_init_y + sample_x_size, :]
+                one_y = Y_local[idx][my_init_x:my_init_x + sample_x_size, my_init_y: my_init_y + sample_y_size] / 255.0
+                one_x = resize(one_x, (constants.IMG_HEIGHT, constants.IMG_WIDTH), mode='constant', preserve_range=True)
+                one_y = resize(one_y, (constants.IMG_HEIGHT, constants.IMG_WIDTH), mode='constant', preserve_range=True)
                 op, one_x, one_y = self.modify_image(one_x, one_y)
                 idxs.append(idx)
                 X_batch.append(one_x)
                 Y_batch.append(one_y)
                 #r = random.randint(1, 100000000)
                 #print one_x.shape
-                #imsave('temp_images/' + str(r) + '-x-' + op + '.png', one_x)
-                #imsave('temp_images/' + str(r) + '-y-' + op + '.png', one_y.reshape(256, 256))
+                #imsave('temp_images/' + str(r) + '-'.join(['x', str(my_init_x), str(my_init_y), str(sample_x_size), str(sample_y_size)]) + '.png', one_x)
+                #imsave('temp_images/' + str(r) + '-'.join(['y', str(my_init_x), str(my_init_y), str(sample_x_size), str(sample_y_size)]) + '.png', one_y.reshape(256, 256))
             if train_or_val == 'temp':
                 yield idxs, np.array(X_batch), np.array(Y_batch)
             else:
