@@ -1,0 +1,43 @@
+SHARED NETWORK
+There are conv + maxpool layers which produce a feature map. Let's call it CFM.
+
+REGION PROPOSAL NETWORK
+RPN constists of CFM + something more.
+Slide a 3x3 spatial window over CFM. Have a 3x3 conv layer
+(a) a 1x1 conv layer, which feeds into FC layer, for class probabilities
+(b) another 1x1 conv layer, which feeds into FC layer, for region proposal
+
+These two layers output 2k and 4k outputs respectively, where k is the number
+of anchors at each point.
+
+RoI POOLING LAYER:
+Take
+(a) Convolutional feature map
+(b) a region proposal in form of 4 numbers
+Extract a fixed length feature vector (say 7x7).
+How do you extract?
+    Region proposal will be for the form: 
+    o top left corner (r, c)
+    o height and width (h, w)
+          This is a region in the conv feature map (not input image)
+    For each channel in conv feature map:
+       You divided h x w slice of input conv feature map in H x W (say 7x7)
+       parts. So, each part will contain nearly H/h x W/w pixels.
+       Then you max pool each part to produce 7x7 output.
+Question: Where is input (b) being used.
+
+Output of RoI pooling layer goes to two FC layers
+and then
+(a) Another FC layer for softmax probabilities
+(b) Another FC layer for bounding box
+
+SPPNet:
+Take last layer of convolution
+Do max pooling to produce 3x3, 2x2 and 1x1 output (with some number of channels)
+Feed it to FC layer
+=====================================
+How prediction with mask rcnn works
+
+Firstly, there is resnet, and you take some of its layers, and call them C2, C3, C4, C5
+
+On each of the above layers, apply 1x1 conv

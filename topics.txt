@@ -1,0 +1,5 @@
+- Send your rle. I will generate mask and check differences
+- 100 more masks but little improvement in score
+
+- Does val loss go up in next round?
+- Why are there so many inputs in the model. There should be just one: the input image

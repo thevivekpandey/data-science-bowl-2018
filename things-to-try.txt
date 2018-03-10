@@ -24,3 +24,10 @@
 
 - Size could play a role. We should avoid resizing, rather take cuts of
   large sized images
+
+- How are overlapping areas resolved in training set. I end up giving all to smaller guy. [YOU ARE DOING IT CORRECTLY]
+- Does morphological dilation make sense? [NO]
+- What to do if one nucleus is contained in another, or its area is 90%+ common with another nucleus? [We should remove smaller nucleus]
+- Remove nuclei <= 16 in size
+- Fill the holes [1px increase in size is already doing it]
+- For overlapping area, will L1 distance yield better result?

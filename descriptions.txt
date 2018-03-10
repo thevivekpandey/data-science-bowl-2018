@@ -47,4 +47,232 @@ Now, the main ideas are:
 Jan 28
 - With 7 augmentations and many cycles, got 30.6% which is higehst ever.
   You should continue to train as long as mean iou keeps increasing.
-- Now let us try different sized random crops
+- Now let us try different sized random crops: Did not help.
+--------------------------
+Jan 29:
+   I have given up on my ideas. Now I will be trying mask RCNN. Everybody is
+using it and getting good scores.
+
+Feb 6
+------
+First version of mask-rcnn: 10 epochs with resized training and non resized prediction. 19.4%
+1491 masks predicted
+
+Feb 7
+-----
+mask-rcnn-2: 10 epcohs with non resized training and predictions.
+2353 masks predictions, 30.5%
+
+mask-rcnn-3: 10 epochs with all and 10 epchos with heads.
+2305 masks preidctions, 33.7%
+
+Feb 8
+-----
+mask-rcnn-4: 10 epochs with head then 10 epochs with all
+Used 8 way augmentation.
+1668 predictions, 25.8%
+Poor score. Why? Don't know. Augmentation went wrong.
+
+mask-rcnn-5: 10 + 10
+2220 predictions.
+8 way augmnetation: 31.9.
+Some deterioration. Surprising.
+
+My thinking is that we must be getting much more predictions with augmentation,
+which would get merged. Need to check this theory.
+
+So, I will test this out:
+10 epochs of "all" training:
+
+                       Num masks predicted   |  Num masks outputted  | mAP  | validation loss
+with augmentation                            
+without augmentation
+
+With augmentation: 
+====================
+10 rounds of all training
+Num masks predicted: 2437
+Num masks outputted: 2221
+valiation loss: 2.14
+
+5 more rounds of all training
+mAP: 81.3%
+Num masks predicted: 2220
+Num masks outputted: 2208
+valiation loss: 1.46
+
+Without agumentation
+=====================
+mAP: 78.7%
+10 rounds of all training:
+Num masks predicted: 2312
+Num masks outputted: 2158
+validation loss: 1.42
+
+Feb 10
+------
+Model which gave 32.0 without post processing, gave 32.2 with post processing.
+
+10 epochs of all + 10 epochs of heads + 10 epochs of 5+ + 10 epochs fo 3+ gave 33.8 without post processing
+
+But loss was min after 30 epochs. That gave a score of 33.9. Init masks 2325, which got collapsed to 2295
+With post processing, got 34.5
+
+I think next thing is to train a lot, with augmentation
+
+Feb 11
+------
+40 cycles of training
+
+Took loss down to 0.35, with USE_MINI_MASK = False, score without post processing = 32.5
+2525 predictions, down to 2434
+
+With post processing, score is 33.5, and num predictions = 2515
+
+Now let us decrease RPN_NMS_THRESHOLD 0.7 => 0.6. 16 epochs of all training.
+2452 predictions before preprocessing, 2535 after post processing.
+Just 27.7?
+
+Feb 12
+------
+13 cycles of training
+Changed RPN_ANCHOR_SCALES = (4, 8, 16, 32, 64) to (8, 16, 32, 64, 128).
+2407 predictions: 30.1%
+after processing, 2494 predictions: 30.9%
+
+Feb 13
+------
+20 heads + 20 all (/10)
+40 cycles of training: 33.7%
+
+Rahul debugged that you were giving IMAGE_MIN_SIZE/IMAGE_MAX_SIZE params which was detrimental to performance.
+With 10 epochs train all
+Without post processing: 35.4: 2585 nuclei
+With post processing: 41.0: 2871 nuclei
+
+10 more epochs with learning rate /10: 41.2 with 2831 nuclei
+Feb 14
+------
+Use 8 way augmentation
+17 epcohs with 1000 steps per epoch
+2530 -> 2819 nuclei predicted
+Without post processing: 33.9%
+With post processing: 37.9%
+
+After 40 epochs: 38.1
+
+Now, 5000 steps per epoch
+After 43 epochs: 39.7
+2493 -> 2780
+
+2 more epochs
+2508 => 2806: 39.1
+-------
+Feb 17
+Stopped using resize mask, but also stopped using large nuclei items
+After seeing each image 4 times, got 36.3%. Predicted only 2498 nuclei.
+So, we do need to see training examples with more images. [23.csv]
+But we did not compute post processing correctly. So, it appears post processing should help.
+
+Seeing each image 4 times leads to 40.2 score (with post processing) [24.sv]
+------
+Again, see each image 4.5 times only with images with < 100 masks. USE_MINI_MASK = False
+39.3 (2536 => 2792 predictions)
+So, we do need all the samples with high number of masks.
+
+-----
+Feb 18
+Seeing each image thrice, with USE_MINI_MASK=False leads to 41.4% (with post processing)
+(2572 => 2801 predictions)
+
+See every image thrice more: 38.4
+(2572 => 2797 predictions)
+------
+Feb 19
+From 41.4% model, avoid 1 pixel boundary. That leads to 41.9%
+mask-rcnn-29-local-b.csv (2810 predictions)
+
+Tried to add additional 1px padding, but led to score of 39.1%
+
+Then (only for prediction), changed MAX_GT_INSTANCE and DETECTION_MAX_INSTANCES to 150.
+Got 42.2 (2840 => 3131 predictions)
+
+Then I increased them to 250
+Got 42.2 again (2980 => 3311)
+
+In manual post processing, you found around 200 empty regions. What are they? How do they
+come? Why do they vanish? Can we resuscitate them and get some boost?
+--------------
+Feb 20
+------
+First attempt with padding + resize mask = False
+35.2%. Why so bad? I do not know? Saw each image 4 times.
+
+Feb 21
+------
+Only resize mask = False, 41.6 (submission 34).
+Why does not not improve?
+Also need to find why so many masks become null
+Found the bug, same submission now leads to 41.9%
+
+After fixing the bug, tried with feb_20*.h5 and that led to 42.7. Highest
+till now.
+
+Submission 35
+1 pixel border brings me to 46.2! (That's 3.5% by just 1 pixel boundary) (c)
+
+1 pixel 8 way gets me down to 22. What is the bug, I cannot resolve. (d)
+Feb 22
+------
+Submission 35
+Figured out some bugs.
+1 pixel border (4 way) brings me to 46.6% (d)
+
+Version f: 1 pixel border (4 way) with >=0 rather than >0 (46.6%: no improvement)
+version g: 1 pixel border (8 way) (with >= 0): 43.7% i.e. it hurts
+
+Tried with 1pixel border 4 way (diagonal). Leads to 43.7%
+
+3310 masks
+
+Next:
+- we should see both versions f and g and see if something more can be done
+- fill holes if any
+- is there need of morpholocial dilation?
+----
+Feb 25
+submission 36
+DETECTION_MIN_CONFIDENCE = 0.6
+version a: basic (just assign common pixel to one or the other mask): 42.3
+version b: 1px border: 46.3
+3500 masks
+
+submission 37
+DETECTION_MIN_CONFIDENCE = 0.8
+version a: 42.7
+version b: 46.3
+2910 masks
+-----
+March 1
+submission 36.a was original (42.7)
+36.1 handled overlapped masks (46.6)
+
+37.1: original, can't be submitted.
+37.2: handle overlap (46.6) 3311 masks
+
+37.3: remove extraneous masks (cannot submit) (removed 10 masks) (removal threshold 0.9)
+37.4: 37.3 + handle overlap (46.8) 3301 masks
+
+37.3b: remove extraneous masks (cannot submit) (removed 17 masks) (removal threshold 0.7)
+37.4b: 37.3b + handle overlap (46.9) 3294 masks
+
+37.3c threshold of 0.55
+37.4c: 46.8
+
+3d threshold of 0.6: 22 masks omitted
+4d  46.8
+
+3e threshold of 0.65: 19 masks omitted
+4e 46.9. Not an improvement. So, 37.4b with threshold of 0.7 is best.
+
+threshold of 0.8, 14 omitted masks version f 46.9 not an improved score.
