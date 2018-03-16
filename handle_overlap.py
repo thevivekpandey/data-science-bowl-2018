@@ -18,21 +18,21 @@ def post_process(mask):
     cgs, sizes = [], []
     pixel_2_masks = {}
     pixel_2_closest_mask = {}
-    
+
     width, height = mask.shape[0], mask.shape[1]
     # Put 1 pixel boundary around each mask
     
-    xs, ys, zs = np.where(mask == 1)
-    num_ones = len(xs)
-    for i in range(num_ones):
-        x, y, z = xs[i], ys[i], zs[i]
-        if x - 1 >= 0     and mask[x-1,y,z] == 0: mask[x-1,y,z] = 2
-        if x + 1 < width  and mask[x+1,y,z] == 0: mask[x+1,y,z] = 2
-        if y - 1 >= 0     and mask[x,y-1,z] == 0: mask[x,y-1,z] = 2
-        if y + 1 < height and mask[x,y+1,z] == 0: mask[x,y+1,z] = 2
-    
-    # Convert all 2s to 1
-    mask[mask == 2] = 1
+    #xs, ys, zs = np.where(mask == 1)
+    #num_ones = len(xs)
+    #for i in range(num_ones):
+    #    x, y, z = xs[i], ys[i], zs[i]
+    #    if x - 1 >= 0     and mask[x-1,y,z] == 0: mask[x-1,y,z] = 2
+    #    if x + 1 < width  and mask[x+1,y,z] == 0: mask[x+1,y,z] = 2
+    #    if y - 1 >= 0     and mask[x,y-1,z] == 0: mask[x,y-1,z] = 2
+    #    if y + 1 < height and mask[x,y+1,z] == 0: mask[x,y+1,z] = 2
+    #
+    ## Convert all 2s to 1
+    #mask[mask == 2] = 1
         
     for i in range(num_masks):
         mask_ = mask[:,:,i:i+1]

@@ -2,38 +2,15 @@ import sys
 import pandas as pd
 import my_utils
 
-def get_rle(arr):
-    current = arr[0]
-    start = arr[0]
-    count = 1
-    parts = []
-    for i in range(1, len(arr)):
-        if arr[i] == current + 1:
-            count += 1
-            current = arr[i]
-        else:
-            parts.append(str(start) + ' ' + str(count))
-            current = arr[i]
-            start = arr[i]
-            count = 1
-    parts.append(str(start) + ' ' + str(count))
-    return ' '.join(parts)
         
 def check_subsumed(arr1, arr2):
     set1 = set(arr1)
     set2 = set(arr2)
-    if len(set1.intersection(set2)) > 0.8* len(set1):
+    if len(set1.intersection(set2)) > 0.9* len(set1):
         print(len(set1.intersection(set2)), 'vs', len(set1))
         return True
     else:
         return False
-
-def write_new_rle_file(output_file_name, test_ids, rles):
-    f = open(output_file_name, 'w')
-    f.write('ImageId,EncodedPixels\n')
-    for i in range(len(test_ids)):
-        f.write(test_ids[i] + ',' + rles[i] + '\n')
-    f.close()
 
 def remove_extraneous_masks(input_file_name, output_file_name):
     img_2_pixels = my_utils.get_img_2_pixels_from_rle_file(input_file_name)
@@ -59,6 +36,6 @@ def remove_extraneous_masks(input_file_name, output_file_name):
                     to_be_deleted = True
                     break
             if not to_be_deleted:
-                rles.append(get_rle(sorted(list(pixel_array[i]))))
+                rles.append(my_utils.get_rle(sorted(list(pixel_array[i]))))
                 test_ids.append(img)
-    write_new_rle_file(output_file_name, test_ids, rles)
+    my_utils.write_new_rle_file(output_file_name, test_ids, rles)

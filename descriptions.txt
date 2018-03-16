@@ -276,3 +276,11 @@ submission 36.a was original (42.7)
 4e 46.9. Not an improvement. So, 37.4b with threshold of 0.7 is best.
 
 threshold of 0.8, 14 omitted masks version f 46.9 not an improved score.
+-------
+March 11
+test time augmentation: brothers counted if all agree with iou = 0.6.
+Increases the score to 47.3%
+
+iou = 0.65 gives 44.8%
+
+iou = 0.5 gives 48.6%

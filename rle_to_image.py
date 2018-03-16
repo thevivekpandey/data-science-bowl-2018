@@ -47,7 +47,7 @@ def get_rles(fname):
 def get_image_sizes(images):
     sizes = {}
     for image in images:
-        x = imread('../input/stage1_train/' + image + '/images/' + image + '.png')
+        x = imread('../input/stage1_test/' + image + '/images/' + image + '.png')
         sizes[image] = (x.shape[0], x.shape[1])
     return sizes
 

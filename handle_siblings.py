@@ -12,16 +12,14 @@ def get_index_and_iou_of_max_overlap(src_pixels, target_pixels_list):
         intersection = len(src_pixels.intersection(target_pixels))
         union = len(src_pixels.union(target_pixels))
         iou =  intersection * 1.0 / union
-        r = '\t'.join([str(x) for x in (i, len(src_pixels), len(target_pixels), intersection, union)])
-        #print(r)
         if iou > max_iou:
             max_iou = iou
             max_iou_index = i
     return max_iou, max_iou_index
 
-def handle_siblings(in_base_name, out_file_name):
-    mutations = ['90', '180', '270', 'fh', 'fv', 'fh_90', 'fv_90']
-    all_mutations = ['0', '90', '180', '270', 'fh', 'fv', 'fh_90', 'fv_90']
+def handle_siblings_work(in_base_name, out_file_name):
+    mutations = ['B', 'C', 'D', 'E', 'F', 'G', 'H']
+    all_mutations = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
     #This dict has key as mutation and value as another dict.
     #Inner dict has image as key and a list of sets as value. Each set in the list corresponds to a mask.
@@ -33,17 +31,29 @@ def handle_siblings(in_base_name, out_file_name):
         mutation_2_img_2_pixels[m] = my_utils.get_img_2_pixels_from_rle_file(rle_file)
     print("Ended reading the files")
 
-    for image, masks in mutation_2_img_2_pixels['0'].items():
+    output_rles = []
+    output_test_ids = []
+    for image, masks in mutation_2_img_2_pixels['A'].items():
         #Each mask is a set
         for mask in masks:
-            print(mask)
+            num_brothers = 0
+            union_mask = set()
+            iou_product = 1
+            union_mask = union_mask.union(mask)
             for mutation in mutations:
                 iou, index = get_index_and_iou_of_max_overlap(mask, mutation_2_img_2_pixels[mutation][image])
-                print(mutation_2_img_2_pixels[mutation][image])
-                print(iou, index)
-                sys.exit(1)
+                matching_mask = mutation_2_img_2_pixels[mutation][image][index]
+                union_mask = union_mask.union(matching_mask)
+                iou_product *= iou
+                if iou > 0.42:
+                    num_brothers += 1
+            #if num_brothers == 7:
+            if pow(iou_product, 1/7) > 0.42:
+                output_test_ids.append(image)
+                output_rles.append(my_utils.get_rle(sorted(list(union_mask))))
+    return output_test_ids, output_rles
 
-if __name__ == '__main__':
-    in_base_name = sys.argv[1]
-    out_file_name = sys.argv[2]
-    handle_siblings(in_base_name, out_file_name)
+def handle_siblings(in_base_name, out_file_name):
+    output_test_ids, output_rles = handle_siblings_work(in_base_name, out_file_name)
+    my_utils.write_new_rle_file(out_file_name, output_test_ids, output_rles)
+    

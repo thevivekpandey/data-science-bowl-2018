@@ -79,3 +79,26 @@ def get_img_2_pixels_from_rle_file(input_rle_file):
     fin.close()
     return img_2_pixels
 
+def get_rle(arr):
+    current = arr[0]
+    start = arr[0]
+    count = 1
+    parts = []
+    for i in range(1, len(arr)):
+        if arr[i] == current + 1:
+            count += 1
+            current = arr[i]
+        else:
+            parts.append(str(start) + ' ' + str(count))
+            current = arr[i]
+            start = arr[i]
+            count = 1
+    parts.append(str(start) + ' ' + str(count))
+    return ' '.join(parts)
+
+def write_new_rle_file(output_file_name, test_ids, rles):
+    f = open(output_file_name, 'w')
+    f.write('ImageId,EncodedPixels\n')
+    for i in range(len(test_ids)):
+        f.write(test_ids[i] + ',' + rles[i] + '\n')
+    f.close()
